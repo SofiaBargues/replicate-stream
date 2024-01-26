@@ -2,15 +2,12 @@
 import { Prediction } from "@/types";
 import { unstable_noStore as noStore } from "next/cache";
 
-const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-
 export async function createPrediction(
-  _state: null | Prediction,
   formData: FormData,
 ): Promise<Prediction> {
   noStore();
 
-  let prediction = await fetch("https://replicate.com/api/predictions", {
+  const prediction = await fetch("https://replicate.com/api/predictions", {
     headers: {
       accept: "application/json",
       "accept-language": "en,es-ES;q=0.9,es;q=0.8,pt;q=0.7",
@@ -53,32 +50,28 @@ export async function createPrediction(
     credentials: "include",
   }).then((res) => res.json() as Promise<Prediction>);
 
-  while (["starting", "processing"].includes(prediction.status)) {
-    console.log({ id: prediction.id });
-    prediction = await fetch(
-      "https://replicate.com/api/predictions/" + prediction.id,
-      {
-        headers: {
-          accept: "*/*",
-          "accept-language": "en,es-ES;q=0.9,es;q=0.8,pt;q=0.7",
-          "sec-ch-ua":
-            '"Not_A Brand";v="8", "Chromium";v="120", "Google Chrome";v="120"',
-          "sec-ch-ua-mobile": "?0",
-          "sec-ch-ua-platform": '"Windows"',
-          "sec-fetch-dest": "empty",
-          "sec-fetch-mode": "cors",
-          "sec-fetch-site": "same-origin",
-        },
-        referrer: "https://replicate.com/jagilley/controlnet-hough",
-        referrerPolicy: "same-origin",
-        body: null,
-        method: "GET",
-        mode: "cors",
-        credentials: "include",
-      },
-    ).then((res) => res.json() as Promise<Prediction>);
-    await sleep(4000);
-  }
   console.log(prediction);
   return prediction;
+}
+export async function getPrediction(id: string) {
+  noStore();
+  return fetch("https://replicate.com/api/predictions/" + id, {
+    headers: {
+      accept: "*/*",
+      "accept-language": "en,es-ES;q=0.9,es;q=0.8,pt;q=0.7",
+      "sec-ch-ua":
+        '"Not_A Brand";v="8", "Chromium";v="120", "Google Chrome";v="120"',
+      "sec-ch-ua-mobile": "?0",
+      "sec-ch-ua-platform": '"Windows"',
+      "sec-fetch-dest": "empty",
+      "sec-fetch-mode": "cors",
+      "sec-fetch-site": "same-origin",
+    },
+    referrer: "https://replicate.com/jagilley/controlnet-hough",
+    referrerPolicy: "same-origin",
+    body: null,
+    method: "GET",
+    mode: "cors",
+    credentials: "include",
+  }).then((res) => res.json() as Promise<Prediction>);
 }
