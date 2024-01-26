@@ -4,7 +4,10 @@ import { unstable_noStore as noStore } from "next/cache";
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-export async function createPrediction(formData: FormData) {
+export async function createPrediction(
+  _state: null | Prediction,
+  formData: FormData,
+): Promise<Prediction> {
   noStore();
 
   let prediction = await fetch("https://replicate.com/api/predictions", {
