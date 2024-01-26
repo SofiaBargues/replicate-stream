@@ -2,6 +2,7 @@
 import { createPrediction, getPrediction } from "@/actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import { Prediction } from "@/types";
 import { useFormState, useFormStatus } from "react-dom";
@@ -11,6 +12,7 @@ function FormContent() {
   const { pending } = useFormStatus();
   return (
     <>
+      {pending ? <Skeleton className="h-[480px] w-[512px]" /> : null}
       <Input
         defaultValue="https://replicate.delivery/pbxt/IJZOELWrncBcjdE1s5Ko8ou35ZOxjNxDqMf0BhoRUAtv76u4/room.png"
         name="image"
