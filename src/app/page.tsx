@@ -17,7 +17,7 @@ function FormContent() {
         defaultValue="https://replicate.delivery/pbxt/IJZOELWrncBcjdE1s5Ko8ou35ZOxjNxDqMf0BhoRUAtv76u4/room.png"
         name="image"
         placeholder="https://replicate.delivery/pbxt/IJZOELWrncBcjdE1s5Ko8ou35ZOxjNxDqMf0BhoRUAtv76u4/room.png"
-        type="text"
+        type="file"
       />
       <Textarea placeholder="An industrial bedroom" name="prompt" />
       <Button disabled={pending}>Create</Button>

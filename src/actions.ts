@@ -7,6 +7,25 @@ export async function createPrediction(
 ): Promise<Prediction> {
   noStore();
 
+  const imageUrl = await fetch(
+    `https://api.cloudinary.com/v1_1/sofiabargues/image/upload?upload_preset=replicate-stream&folder=replicate-stream`,
+    {
+      method: "PUT",
+      body: formData.get("image") as File,
+    },
+  )
+    .then((res) => res.json() as Promise<{ secure_url: string }>)
+    .then((resJson) => {
+      console.log(resJson);
+      return resJson.secure_url;
+    })
+    .catch((err) => console.error(err));
+
+  console.log({ imageUrl });
+  if (!imageUrl) {
+    throw Error("Can't upload");
+  }
+
   const prediction = await fetch("https://replicate.com/api/predictions", {
     headers: {
       accept: "application/json",
@@ -26,7 +45,7 @@ export async function createPrediction(
     body: JSON.stringify({
       input: {
         eta: 0,
-        image: formData.get("image"),
+        image: imageUrl,
         scale: 9,
         prompt: formData.get("prompt"),
         a_prompt: "best quality, extremely detailed",
