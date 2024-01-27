@@ -2,6 +2,51 @@
 import { Prediction } from "@/types";
 import { unstable_noStore as noStore } from "next/cache";
 
+import Replicate from "replicate";
+
+const replicate = new Replicate({
+  auth: process.env.REPLICATE_API_KEY,
+});
+
+export async function runModel(formData: FormData) {
+  const imageUrl = await fetch(
+    `https://api.cloudinary.com/v1_1/sofiabargues/image/upload?upload_preset=replicate-stream&folder=replicate-stream`,
+    {
+      method: "PUT",
+      body: formData.get("image") as File,
+    },
+  )
+    .then((res) => res.json() as Promise<{ secure_url: string }>)
+    .then((resJson) => {
+      return resJson.secure_url;
+    })
+    .catch((err) => console.error(err));
+
+  if (!imageUrl) {
+    throw Error("Can't upload");
+  }
+
+  return (await replicate.run(
+    "mcai/babes-v2.0-img2img:2bca10ed539cf2196f18b4ec85128a80355d94934db8620884ecca552cdc4def",
+    {
+      input: {
+        image: imageUrl,
+        prompt:
+          (formData.get("prompt") as string) +
+          ", Disney character concept art, 8k, unreal engine",
+        upscale: 2,
+        strength: 0.5,
+        scheduler: "EulerAncestralDiscrete",
+        num_outputs: 1,
+        guidance_scale: 7.5,
+        negative_prompt:
+          "disfigured, kitsch, ugly, oversaturated, greain, low-res, deformed, blurry, bad anatomy, poorly drawn face, mutation, mutated, extra limb, poorly drawn hands, missing limb, floating limbs, disconnected limbs, malformed hands, blur, out of focus, long neck, long body, disgusting, poorly drawn, childish, mutilated, mangled, old, surreal, calligraphy, sign, writing, watermark, text, body out of frame, extra legs, extra arms, extra feet, out of frame, poorly drawn feet, cross-eye",
+        num_inference_steps: 30,
+      },
+    },
+  )) as string[];
+}
+
 export async function createPrediction(
   formData: FormData,
 ): Promise<Prediction> {
@@ -16,12 +61,10 @@ export async function createPrediction(
   )
     .then((res) => res.json() as Promise<{ secure_url: string }>)
     .then((resJson) => {
-      console.log(resJson);
       return resJson.secure_url;
     })
     .catch((err) => console.error(err));
 
-  console.log({ imageUrl });
   if (!imageUrl) {
     throw Error("Can't upload");
   }
@@ -69,7 +112,7 @@ export async function createPrediction(
     credentials: "include",
   }).then((res) => res.json() as Promise<Prediction>);
 
-  console.log(prediction);
+  //   console.log(prediction);
   return prediction;
 }
 export async function getPrediction(id: string) {

@@ -1,5 +1,5 @@
 "use client";
-import { createPrediction, getPrediction } from "@/actions";
+import { createPrediction, getPrediction, runModel } from "@/actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -28,21 +28,13 @@ function FormContent() {
 export default function HomePage() {
   const [state, formAction] = useFormState(handleSubmit, null);
 
-  async function handleSubmit(_state: null | Prediction, formData: FormData) {
-    let prediction = await createPrediction(formData);
-    while (["starting", "processing"].includes(prediction.status)) {
-      prediction = await getPrediction(prediction.id);
-      await sleep(4000);
-    }
-
-    return prediction;
+  async function handleSubmit(_state: null | string[], formData: FormData) {
+    return await runModel(formData);
   }
 
   return (
     <section className="m-auto grid max-w-[512px] gap-4">
-      {state?.output && (
-        <img alt="Previsualizacion del render" src={state.output[1]} />
-      )}
+      {state && <img alt="Previsualizacion del render" src={state[0]} />}
 
       <form action={formAction} className="grid gap-4">
         <FormContent />
